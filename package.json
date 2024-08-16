@@ -1,0 +1,24 @@
+{
+  "name": "collar-backend",
+  "version": "1.0.0",
+  "description": "collar backend to handle http req",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MyPerro-org/collar-backend.git"
+  },
+  "author": "varshith",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MyPerro-org/collar-backend/issues"
+  },
+  "homepage": "https://github.com/MyPerro-org/collar-backend#readme",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "express": "^4.19.2"
+  }
+}
