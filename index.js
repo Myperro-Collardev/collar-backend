@@ -7,6 +7,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
     res.send({"message": "bow bow"});
+    console.log({"message": "bow bow"});
 });
 
 app.post('/', (req, res) => {
