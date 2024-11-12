@@ -12,7 +12,7 @@ app.get('/', (req, res) => {
 
 app.post('/sensor_data', (req, res) => {
     console.log(req.body);
-    res.send({"message": "Success!"});
+    res.send({"message": req.body});
 });
 
 app.listen(port,(res,req)=>{
