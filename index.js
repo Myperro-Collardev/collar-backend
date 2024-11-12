@@ -10,7 +10,7 @@ app.get('/', (req, res) => {
     console.log({"message": "bow bow"});
 });
 
-app.post('/', (req, res) => {
+app.post('/sensor_data', (req, res) => {
     console.log(req.body);
     res.send({"message": "Success!"});
 });
