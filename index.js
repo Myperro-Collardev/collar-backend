@@ -15,6 +15,11 @@ app.post('/sensor_data', (req, res) => {
     res.send({"message": req.body});
 });
 
+app.put('/sensor_data', (req, res) => {
+    console.log(req.body);
+    res.send({"message": req.body});
+});
+
 app.listen(port,(res,req)=>{
     console.log(`listening on ${port}`);
 });
