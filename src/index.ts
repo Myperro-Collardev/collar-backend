@@ -240,7 +240,6 @@ app.get('/sensor_data', (req: Request, res: Response) => {
 app.get('/flush',(req: Request, res: Response) => {
     arr.length = 0;
     stepCount = 0;
-    speed = 0;
     res.status(200).json({ message: 'Data flushed' });
 });
 
