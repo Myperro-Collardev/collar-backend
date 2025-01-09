@@ -183,20 +183,35 @@ var arr: ResponseData[] = [];
 var stepCount: number = 0;
 var speed = 0;
 
+
+const BASELINE_MAGNITUDE = 0.5; // Adjust based on sensor sensitivity
+const DAMPING_FACTOR = 0.9; // Reduces speed gradually when no significant movement
+
 app.post('/sensor_data', (req: Request<{}, {}, SensorData>, res: Response<ResponseData>) => {
     const sensorData = req.body;
 
     console.log('Received sensor data:', sensorData);
 
+    // Calculate magnitude of accelerometer data
     const magnitude = Math.sqrt(
-        Math.pow(sensorData.x, 2) + 
-        Math.pow(sensorData.y, 2) + 
+        Math.pow(sensorData.x, 2) +
+        Math.pow(sensorData.y, 2) +
         Math.pow(sensorData.z, 2)
     );
 
-    const deltaTime = 0.1; // Assuming 10 readings per second
-    speed += magnitude * deltaTime;
+    // Update speed based on magnitude changes
+    if (magnitude > BASELINE_MAGNITUDE) {
+        const deltaTime = 0.1; // Assuming 10 readings per second
+        speed += (magnitude - BASELINE_MAGNITUDE) * deltaTime;
+    } else {
+        // Apply damping when magnitude is below baseline
+        speed *= DAMPING_FACTOR;
+    }
 
+    // Ensure speed is never negative
+    speed = Math.max(speed, 0);
+
+    // Process the dog and step counter logic
     const myDog = new Dog(sensorData.dog_breed, sensorData.weight, sensorData.age, sensorData.sex, speed);
     const stepCounter = new StepCounter();
 
@@ -205,9 +220,9 @@ app.post('/sensor_data', (req: Request<{}, {}, SensorData>, res: Response<Respon
     const steps = stepCounter.processAccelerometerData(sensorData.x, sensorData.y, sensorData.z);
 
     stepCount += steps;
-    
+
     console.log(`Current BPM: ${bpm}`);
-    console.log(`The calories burnt by my ${sensorData.dog_breed} is ${caloriesBurnt.toFixed(2)} calories.`);    
+    console.log(`The calories burnt by my ${sensorData.dog_breed} is ${caloriesBurnt.toFixed(2)} calories.`);
     console.log(`Current step count: ${steps}`);
 
     const time = sensorData.timeStamp;
@@ -217,7 +232,7 @@ app.post('/sensor_data', (req: Request<{}, {}, SensorData>, res: Response<Respon
         stepCount,
         timestamp: time
     });
-    
+
     res.json({
         bpm,
         caloriesBurnt,
@@ -225,6 +240,7 @@ app.post('/sensor_data', (req: Request<{}, {}, SensorData>, res: Response<Respon
         stepCount
     });
 });
+
 
 app.get('/sensor_data', (req: Request, res: Response) => {
     if (arr.length > 0) {
