@@ -105,7 +105,7 @@ class Dog {
 }
 
 class StepCounter {
-    private readonly THRESHOLD: number = 1.2;
+    private readonly THRESHOLD: number = Number(process.env.THRESHOLD) || 1.7;
     private readonly MIN_STEP_TIME: number = 250;
     private readonly WINDOW_SIZE: number = 10;
     
