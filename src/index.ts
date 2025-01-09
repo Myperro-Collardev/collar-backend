@@ -181,13 +181,23 @@ interface ResponseData {
 
 var arr: ResponseData[] = [];
 var stepCount: number = 0;
+var speed = 0;
 
 app.post('/sensor_data', (req: Request<{}, {}, SensorData>, res: Response<ResponseData>) => {
     const sensorData = req.body;
 
     console.log('Received sensor data:', sensorData);
 
-    const myDog = new Dog(sensorData.dog_breed, sensorData.weight, sensorData.age, sensorData.sex, sensorData.speed);
+    const magnitude = Math.sqrt(
+        Math.pow(sensorData.x, 2) + 
+        Math.pow(sensorData.y, 2) + 
+        Math.pow(sensorData.z, 2)
+    );
+
+    const deltaTime = 0.1; // Assuming 10 readings per second
+    speed += magnitude * deltaTime;
+
+    const myDog = new Dog(sensorData.dog_breed, sensorData.weight, sensorData.age, sensorData.sex, speed);
     const stepCounter = new StepCounter();
 
     const caloriesBurnt = myDog.calculateCaloriesBurnt();
@@ -228,6 +238,7 @@ app.get('/sensor_data', (req: Request, res: Response) => {
 app.get('/flush',(req: Request, res: Response) => {
     arr.length = 0;
     stepCount = 0;
+    speed = 0;
     res.status(200).json({ message: 'Data flushed' });
 });
 
