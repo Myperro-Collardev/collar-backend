@@ -92,7 +92,7 @@ class Dog {
         }
 
         // Calculate total calories burnt
-        const caloriesBurnt = bmrCalories * ageFactor[this.age] * sexFactor[this.sex] * activityFactor;
+        const caloriesBurnt = bmrCalories * ageFactor[this.age] * sexFactor[this.sex] * activityFactor ;
         
         // Debug logging
         console.log({
@@ -195,7 +195,7 @@ app.post('/sensor_data', (req: Request<{}, {}, SensorData>, res: Response<Respon
     );
 
     // Ensure speed is never negative
-    const speed = magnitude;
+    const speed = Math.abs(magnitude-9.6);
 
     // Process the dog and step counter logic
     const myDog = new Dog(sensorData.dog_breed, sensorData.weight, sensorData.age, sensorData.sex, speed);
@@ -205,7 +205,7 @@ app.post('/sensor_data', (req: Request<{}, {}, SensorData>, res: Response<Respon
     const bpm = sensorData.bpm;
     const steps = stepCounter.processAccelerometerData(sensorData.x, sensorData.y, sensorData.z);
 
-    stepCount += steps;
+    stepCount += steps-1;
 
     console.log(`Current BPM: ${bpm}`);
     console.log(`The calories burnt by my ${sensorData.dog_breed} is ${caloriesBurnt.toFixed(2)} calories.`);
