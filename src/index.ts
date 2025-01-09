@@ -198,7 +198,7 @@ app.post('/sensor_data', (req: Request<{}, {}, SensorData>, res: Response<Respon
         Math.pow(sensorData.y, 2) +
         Math.pow(sensorData.z, 2)
     );
-    console.log(magnitude)
+    console.log(magnitude);
     // Update speed based on magnitude changes
     if (magnitude > BASELINE_MAGNITUDE) {
         const deltaTime = 0.1; // Assuming 10 readings per second
