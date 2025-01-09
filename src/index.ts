@@ -20,13 +20,18 @@ interface SensorData {
     weight: number;
     age: AgeGroup;
     sex: Sex;
-    speed: number;
-    timeStamp: string;
+    // speed: number;
+    // timeStamp: string;
+    // bpm: number;
+    // x: number;
+    // y: number;
+    // z: number;
+    steps: number;
     bpm: number;
-    x: number;
-    y: number;
-    z: number;
+    calories: number;
+    timeStamp: string;
 }
+
 
 class Dog {
     // Initialize the properties
@@ -180,36 +185,13 @@ interface ResponseData {
 }
 
 var arr: ResponseData[] = [];
-var stepCount: number = 0;
 
 app.post('/sensor_data', (req: Request<{}, {}, SensorData>, res: Response<ResponseData>) => {
     const sensorData = req.body;
 
-    console.log('Received sensor data:', sensorData);
-
-    // Calculate magnitude of accelerometer data
-    const magnitude = Math.sqrt(
-        Math.pow(sensorData.x, 2) +
-        Math.pow(sensorData.y, 2) +
-        Math.pow(sensorData.z, 2)
-    );
-
-    // Ensure speed is never negative
-    const speed = Math.abs(magnitude-9.6);
-
-    // Process the dog and step counter logic
-    const myDog = new Dog(sensorData.dog_breed, sensorData.weight, sensorData.age, sensorData.sex, speed);
-    const stepCounter = new StepCounter();
-
-    const caloriesBurnt = myDog.calculateCaloriesBurnt();
-    const bpm = sensorData.bpm;
-    const steps = stepCounter.processAccelerometerData(sensorData.x, sensorData.y, sensorData.z);
-
-    stepCount += steps-1;
-
-    console.log(`Current BPM: ${bpm}`);
-    console.log(`The calories burnt by my ${sensorData.dog_breed} is ${caloriesBurnt.toFixed(2)} calories.`);
-    console.log(`Current step count: ${steps}`);
+    const bpm = sensorData.bpm
+    const stepCount = sensorData.steps
+    const caloriesBurnt = sensorData.calories
 
     const time = sensorData.timeStamp;
     arr.push({
@@ -239,7 +221,6 @@ app.get('/sensor_data', (req: Request, res: Response) => {
 
 app.get('/flush',(req: Request, res: Response) => {
     arr.length = 0;
-    stepCount = 0;
     res.status(200).json({ message: 'Data flushed' });
 });
 
