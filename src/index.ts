@@ -1,8 +1,11 @@
 import express, { Express, Request, Response } from 'express';
 import bodyParser from 'body-parser';
+import env from 'dotenv';
+
+env.config();
 
 const app:Express = express();
-const port = 3000;
+const port = process.env.PORT|| 3001;
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Type definitions
@@ -16,7 +19,7 @@ interface SensorData {
     age: AgeGroup;
     sex: Sex;
     speed: number;
-    ir_value: number;
+    bpm: number;
     x: number;
     y: number;
     z: number;
@@ -101,60 +104,6 @@ class Dog {
     }
 }
 
-class HeartRateCalculator {
-    private readonly SAMPLE_RATE: number = 25;
-    private readonly BUFFER_SIZE: number = 100;
-    private readonly PEAK_THRESHOLD: number = 50;
-    private lastBeatTime: number = 0;
-    private lastIRValue: number = 0;
-    private beats: number[] = [];
-    private bpm: number = 0;
-
-    // Moving average filter to smooth the signal
-    private movingAverage(irValue: number): number {
-        const alpha = 0.2;
-        const smoothedValue = this.lastIRValue + alpha * (irValue - this.lastIRValue);
-        this.lastIRValue = smoothedValue;
-        return smoothedValue;
-    }
-
-    // Check if current value is a peak
-    private isPeak(currentValue: number, previousValue: number, nextValue: number): boolean {
-        return (currentValue > previousValue &&
-                currentValue > nextValue &&
-                currentValue > this.PEAK_THRESHOLD);
-    }
-
-    // Calculate BPM from IR value
-    calculateBPM(irValue: number): number {
-        const currentTime = Date.now();
-        const smoothedIR = this.movingAverage(irValue);
-
-        if (this.isPeak(smoothedIR, this.lastIRValue, irValue)) {
-            const timeSinceLastBeat = currentTime - this.lastBeatTime;
-            
-            if (timeSinceLastBeat > 0) {
-                const instantBPM = 60000 / timeSinceLastBeat;
-                
-                if (instantBPM >= 40 && instantBPM <= 220) {
-                    this.beats.push(instantBPM);
-                    
-                    if (this.beats.length > this.BUFFER_SIZE) {
-                        this.beats.shift();
-                    }
-                    
-                    if (this.beats.length > 0) {
-                        this.bpm = this.beats.reduce((a, b) => a + b) / this.beats.length;
-                    }
-                }
-            }
-            this.lastBeatTime = currentTime;
-        }
-
-        return Math.round(this.bpm);
-    }
-}
-
 class StepCounter {
     private readonly THRESHOLD: number = 1.2;
     private readonly MIN_STEP_TIME: number = 250;
@@ -223,8 +172,11 @@ class StepCounter {
 interface ResponseData {
     bpm: number;
     caloriesBurnt: number;
-    steps: number;
+    stepCount: number;
 }
+
+var arr: ResponseData[] = [];
+var stepCount: number = 0;
 
 app.post('/sensor_data', (req: Request<{}, {}, SensorData>, res: Response<ResponseData>) => {
     const sensorData = req.body;
@@ -232,22 +184,44 @@ app.post('/sensor_data', (req: Request<{}, {}, SensorData>, res: Response<Respon
     console.log('Received sensor data:', sensorData);
 
     const myDog = new Dog(sensorData.dog_breed, sensorData.weight, sensorData.age, sensorData.sex, sensorData.speed);
-    const heartRateCalculator = new HeartRateCalculator();
     const stepCounter = new StepCounter();
 
     const caloriesBurnt = myDog.calculateCaloriesBurnt();
-    const bpm = heartRateCalculator.calculateBPM(sensorData.ir_value);
+    const bpm = sensorData.bpm;
     const steps = stepCounter.processAccelerometerData(sensorData.x, sensorData.y, sensorData.z);
 
+    stepCount += steps;
+    
     console.log(`Current BPM: ${bpm}`);
     console.log(`The calories burnt by my ${sensorData.dog_breed} is ${caloriesBurnt.toFixed(2)} calories.`);    
     console.log(`Current step count: ${steps}`);
+
+    arr.push({
+        bpm,
+        caloriesBurnt,
+        stepCount
+    });
     
     res.json({
         bpm,
         caloriesBurnt,
-        steps
+        stepCount
     });
+});
+
+app.get('/sensor_data', (req: Request, res: Response) => {
+    if (arr.length > 0) {
+        const data = arr.shift();
+        res.json(data);
+    } else {
+        res.status(404).json({ message: 'No data available' });
+    }
+});
+
+app.get('/flush',(req: Request, res: Response) => {
+    arr.length = 0;
+    stepCount = 0;
+    res.status(200).json({ message: 'Data flushed' });
 });
 
 app.listen(port, () => console.log(`Server running on port ${port}`));
