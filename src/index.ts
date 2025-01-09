@@ -19,6 +19,7 @@ interface SensorData {
     age: AgeGroup;
     sex: Sex;
     speed: number;
+    timeStamp: string;
     bpm: number;
     x: number;
     y: number;
@@ -173,6 +174,7 @@ interface ResponseData {
     bpm: number;
     caloriesBurnt: number;
     stepCount: number;
+    timestamp: string;
 }
 
 var arr: ResponseData[] = [];
@@ -196,15 +198,18 @@ app.post('/sensor_data', (req: Request<{}, {}, SensorData>, res: Response<Respon
     console.log(`The calories burnt by my ${sensorData.dog_breed} is ${caloriesBurnt.toFixed(2)} calories.`);    
     console.log(`Current step count: ${steps}`);
 
+    const time = sensorData.timeStamp;
     arr.push({
         bpm,
         caloriesBurnt,
-        stepCount
+        stepCount,
+        timestamp: time
     });
     
     res.json({
         bpm,
         caloriesBurnt,
+        timestamp: time,
         stepCount
     });
 });
