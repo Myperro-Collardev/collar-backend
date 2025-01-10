@@ -30,6 +30,7 @@ interface SensorData {
     bpm: number;
     calories: number;
     timeStamp: string;
+    temperature: number;
 }
 
 
@@ -182,6 +183,7 @@ interface ResponseData {
     caloriesBurnt: number;
     stepCount: number;
     timestamp: string;
+    temperature: number;
 }
 
 var arr: ResponseData[] = [];
@@ -194,18 +196,21 @@ app.post('/sensor_data', (req: Request<{}, {}, SensorData>, res: Response<Respon
     const caloriesBurnt = sensorData.calories
 
     const time = sensorData.timeStamp;
+    const temperature = sensorData.temperature;
     arr.push({
         bpm,
         caloriesBurnt,
         stepCount,
-        timestamp: time
+        timestamp: time,
+        temperature: temperature
     });
 
     res.json({
         bpm,
         caloriesBurnt,
         timestamp: time,
-        stepCount
+        stepCount,
+        temperature: temperature
     });
 });
 
