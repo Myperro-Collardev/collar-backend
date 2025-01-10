@@ -30,7 +30,7 @@ interface SensorData {
     bpm: number;
     calories: number;
     timeStamp: string;
-    temperature: number;
+    temperature: string;
 }
 
 
@@ -183,7 +183,7 @@ interface ResponseData {
     caloriesBurnt: number;
     stepCount: number;
     timestamp: string;
-    temperature: number;
+    temperature: string;
 }
 
 var arr: ResponseData[] = [];
