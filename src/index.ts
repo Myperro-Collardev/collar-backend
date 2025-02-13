@@ -2,7 +2,7 @@ import express, { Express, Request, Response } from 'express';
 import bodyParser from 'body-parser';
 import env from 'dotenv';
 import cors from "cors";
-import { calculateVitals, VitalsResult } from './hr-spo2-algorithm.ts';
+import { calculateVitals, VitalsResult } from './hr-spo2-algorithm.js';
 
 env.config();
 
