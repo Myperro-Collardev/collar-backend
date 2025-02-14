@@ -9,6 +9,7 @@ env.config();
 const app: Express = express();
 app.use(cors());
 const port = process.env.PORT || 3001;
+app.use(express.json())
 app.use(bodyParser.urlencoded({ extended: true }));
 
 interface SensorData {
