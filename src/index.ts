@@ -38,13 +38,14 @@ function processBuffers(steps: number, timestamp: string, temperature: number): 
     if (irBuffer.length >= BUFFER_SIZE && redirBuffer.length >= BUFFER_SIZE) {
         try {
             const vitals = calculateVitals(irBuffer, redirBuffer);
+            console.log(vitals);
             
-            // Clear buffers after processing
-            irBuffer = [];
-            redirBuffer = [];
+            // remove the first metric
+            irBuffer.shift();
+            redirBuffer.shift();
             
             // Only return data if the calculations are valid
-            if (vitals.heartRateValid && vitals.spO2Valid) {
+            if (vitals.heartRate && vitals.spO2) {
                 return {
                     bpm: vitals.heartRate,
                     spo2: vitals.spO2,
@@ -82,6 +83,8 @@ app.post('/sensor_data', (req: Request<{}, {}, SensorData>, res: Response) => {
         res.json(processedData);
     } else {
         // Return progress status if still collecting data
+        console.log("form collecting")
+        console.log(`irBuffer length: ${irBuffer.length}, redirBuffer length: ${redirBuffer.length}`)
         res.json({
             message: 'Collecting data',
             progress: `${Math.min(irBuffer.length, BUFFER_SIZE)}/${BUFFER_SIZE} samples`
