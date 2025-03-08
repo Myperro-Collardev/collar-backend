@@ -3,7 +3,9 @@ import bodyParser from "body-parser";
 import env from "dotenv";
 import cors from "cors";
 import { calculateVitals, VitalsResult } from "./hr-spo2-algorithm.js";
+import { PrismaClient } from "@prisma/client";
 
+const prisma = new PrismaClient();
 env.config();
 
 const app: Express = express();
@@ -69,19 +71,38 @@ function processBuffers(
   return null;
 }
 
-app.post("/sensor_data", (req: Request<{}, {}, SensorData>, res: Response) => {
+app.post("/sensor_data", async (req: Request<{}, {}, SensorData>, res: Response) => {
   const sensorData = req.body;
+  await prisma.sensorData.create({
+    data: {
+      steps: sensorData.steps,
+      ir: sensorData.ir,
+      redir: sensorData.redir,
+      timeStamp: sensorData.timeStamp,
+      temperature: sensorData.temperature,
+    },
+  });
 
-  // Add new values to buffers
   irBuffer.push(sensorData.ir);
   redirBuffer.push(sensorData.redir);
 
-  // Process data if we have enough samples
   const processedData = processBuffers(
     sensorData.steps,
     sensorData.timeStamp,
     sensorData.temperature,
   );
+
+  if(processedData){
+    await prisma.responseData.create({
+      data: {
+        bpm: processedData.bpm,
+        spo2: processedData.spo2,
+        stepCount: processedData.stepCount,
+        timestamp: processedData.timestamp,
+        temperature: processedData.temperature,
+      },
+    });
+  }
 
   //only keep the lastes metrics !!! remove the next lines for no data loss :)
   if (responseArr.length > 3) {
@@ -92,7 +113,6 @@ app.post("/sensor_data", (req: Request<{}, {}, SensorData>, res: Response) => {
     responseArr.push(processedData);
     res.json(processedData);
   } else {
-    // Return progress status if still collecting data
     console.log("form collecting");
     console.log(
       `irBuffer length: ${irBuffer.length}, redirBuffer length: ${redirBuffer.length}`,
@@ -120,7 +140,6 @@ app.get("/flush", (req: Request, res: Response) => {
   res.status(200).json({ message: "Data flushed" });
 });
 
-// Add endpoint to check buffer status
 app.get("/buffer_status", (req: Request, res: Response) => {
   res.json({
     irBufferSize: irBuffer.length,
