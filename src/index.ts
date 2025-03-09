@@ -116,6 +116,9 @@ app.get("/health", async (req: Request, res: Response) => {
 app.post("/sensor_data", async (req: Request<{}, {}, SensorData>, res: Response) => {
   console.log("Received sensor data:", req.body);
   const sensorData = req.body;
+  if(sensorData.timeStamp === undefined || sensorData.timeStamp === ""){
+    sensorData.timeStamp = new Date().toISOString();
+  }
   
   try {
     await prisma.sensorData.create({
