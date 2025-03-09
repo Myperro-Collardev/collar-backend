@@ -35,7 +35,7 @@ services:
     container_name: prisma_studio
     working_dir: /app
     environment:
-      - DATABASE_URL=postgresql://postgres:password@db:5432/mydatabase
+      DATABASE_URL: "postgresql://postgres:password@db:5432/mydatabase"
     volumes:
       - .:/app
     ports:
