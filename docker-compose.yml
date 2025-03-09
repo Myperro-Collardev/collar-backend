@@ -53,8 +53,7 @@ services:
       - "5555:5555"
     command: ["/bin/sh", "-c", "npm install -g prisma && prisma studio"]
     depends_on:
-      app:
-        condition: service_healthy
+      - db
 
 volumes:
   pgdata:
