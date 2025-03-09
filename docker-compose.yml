@@ -1,5 +1,23 @@
 version: "3.9"
+
 services:
+  app:
+    build: .
+    container_name: collar-backend
+    ports:
+      - "3005:3005"
+      - "5555:5555"  # Expose Prisma Studio on the same container
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: "postgresql://postgres:password@db:5432/mydatabase"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: ["/bin/sh", "-c", "npx prisma generate && npx prisma migrate deploy && npm run start"]
+
   db:
     image: postgres:15
     container_name: postgres_db
@@ -12,48 +30,6 @@ services:
       POSTGRES_DB: mydatabase
     volumes:
       - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  app:
-    build: .
-    container_name: collar-backend-db-1
-    ports:
-      - "3005:3005"
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      DATABASE_URL: "postgresql://postgres:password@db:5432/mydatabase"
-    env_file:
-      - .env
-    volumes:
-      - .:/app
-      - /app/node_modules
-    command: ["/bin/sh", "-c", "npx prisma generate && npx prisma migrate deploy && npm run start"]
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3005/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 20s
-
-  prisma-studio:
-    image: node:18
-    container_name: prisma_studio
-    working_dir: /app
-    environment:
-      DATABASE_URL: "postgresql://postgres:password@db:5432/mydatabase"
-    volumes:
-      - .:/app
-    ports:
-      - "5555:5555"
-    command: ["/bin/sh", "-c", "npm install -g prisma && prisma studio"]
-    depends_on:
-      - db
 
 volumes:
   pgdata:
